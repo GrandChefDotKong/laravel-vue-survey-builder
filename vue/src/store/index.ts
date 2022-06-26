@@ -1,19 +1,6 @@
 import { createStore } from "vuex";
 import axiosClient from '../composables/axios';
-
-  type Question = {
-    id: string
-  }
-
-  type Survey = {
-    id: string,
-    title: string,
-    status: boolean,
-    description: string,
-    image: null | string,
-    expire_date: null | Date,
-    questions: Question[],
-  };
+import { QuestionType, Survey } from '../types/types';
 
   type State = {
     user: {
@@ -24,7 +11,7 @@ import axiosClient from '../composables/axios';
       } | {},
       token: string | null
     },
-    surveys: Survey[]
+    surveys: Survey[],
   }
 
 const store = createStore({
@@ -43,7 +30,29 @@ const store = createStore({
       image: 'https://raw.githubusercontent.com/agungksidik/public-assets/master/logo/laravel-logo.png',
       status: false,
       expire_date: null,
-      questions: [],
+      questions: [
+        {
+          id: 1,
+          type: QuestionType.TEXT,
+          question: 'are you happy today ?',
+          description: `lorem Consectetur esse aliquip culpa mollit amet ad culpa 
+          dolor occaecat velit fugiat`
+        },
+        {
+          id: 3,
+          type: QuestionType.RADIO,
+          question: 'are you happy today ?',
+          description: `lorem Consectetur esse aliquip culpa mollit amet ad culpa 
+          dolor occaecat velit fugiat`
+        },
+        {
+          id: 4,
+          type: QuestionType.CHECKBOX,
+          question: 'are you happy today ?',
+          description: `lorem Consectetur esse aliquip culpa mollit amet 
+          ad culpa dolor occaecat velit fugiat`
+        },
+      ],
     }, 
     ],
   } as State,

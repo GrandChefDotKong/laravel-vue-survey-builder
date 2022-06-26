@@ -5,22 +5,9 @@ import TButton from '../components/core/TButton.vue';
 import store from '../store';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { QuestionType, Question, Survey } from '../types/types';
 
   const route = useRoute();
-
-  type Question = {
-    id: string
-  }
-
-  type Survey = {
-    id: string,
-    title: string,
-    status: boolean,
-    description: string,
-    image: null | string,
-    expire_date: null | Date,
-    questions: Question[],
-  };
 
   const model = ref<Survey | null>({
     id: '',
