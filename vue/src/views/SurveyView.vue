@@ -4,10 +4,11 @@ import QuestionEditor from '../components/editor/QuestionEditor.vue';
 import TButton from '../components/core/TButton.vue';
 import store from '../store';
 import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { QuestionType, Question, Survey } from '../types/types';
 
   const route = useRoute();
+  const router = useRouter();
 
   const model = ref<Survey | null>({
     id: '',
@@ -28,6 +29,9 @@ import { QuestionType, Question, Survey } from '../types/types';
   }
 
   const saveSurvey = () => {
+    store.dispatch('saveSurvey', model.value).then(({ data }) => {
+      router.push({ name: 'SurveyView', params: { id: data.data.id }, });
+    });
 
   }
 
@@ -54,7 +58,6 @@ import { QuestionType, Question, Survey } from '../types/types';
         </h1>
       </div>
     </template>
-    <div v-if="false" class="flex justify-center">Loading...</div>
     <form v-if="model" @submit.prevent="saveSurvey">
       <div class="shadow sm:rounded-md sm:overflow-hidden">
         <div class="px-4 py-5 bg-white space-y-6 sm:p-6">

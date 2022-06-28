@@ -63,6 +63,25 @@ const store = createStore({
         return res;
       });
     },
+    async saveSurvey({ commit }, survey) {
+      let response; 
+      if(survey.id) {
+        response = await axiosClient
+        .put(`/survey/${survey.id}`, survey)
+        .then((res) => {
+          console.log('hellu')
+          commit('updateSurvey', res.data);
+          return res;
+        });
+      } else {   
+        response = axiosClient.post('/survey', survey).then((res) => {
+          commit('saveSurvey', res.data);
+          return res;
+        });
+      }
+
+      return response;
+    }
   },
   mutations: {
     signout: (state) => {
@@ -76,6 +95,19 @@ const store = createStore({
       if(!userData.token) return;
       
       sessionStorage.setItem('TOKEN', userData.token);
+    },
+
+    saveSurvey: (state, newSurvey) => {
+      console.log('hello')
+      state.surveys = [...state.surveys, newSurvey.data];
+    },
+    updateSurvey: (state, newSurvey) => {
+      let newSurveys = state.surveys.filter((survey) => {
+        return survey.id === newSurvey.data.id;
+      });
+
+      newSurveys.push(newSurvey.data);
+      state.surveys = newSurveys; 
     }
   },
   modules: {}

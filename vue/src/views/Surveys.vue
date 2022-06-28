@@ -9,7 +9,6 @@ import { computed } from 'vue';
     if(!confirm(`Are you sure you want to delete ? This can't be undone !!`)) return;
     
   }
-
 </script>
 
 <template>
@@ -47,7 +46,7 @@ import { computed } from 'vue';
         class="flex-flex-col py-4 px-6 shadow-md 
         bg-white hover:bg-gray-50 h-[470px]"
       >
-        <img :src="survey.image" alt="" 
+        <img v-if="survey.image" :src="survey.image" alt="" 
         class="w-full h-48 object-cover">
         <h4 class="mt-4 text-lg font-bold">
           {{ survey.title }}
