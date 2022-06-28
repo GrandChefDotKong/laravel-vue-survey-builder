@@ -6,9 +6,15 @@ export enum QuestionType {
   TEXTAREA = 'textarea'
 }
 
+export type Option = {
+  uuid: string,
+  text: string,
+}
+
 export type Question = {
   id: number,
   type: QuestionType,
+  options: Option[] | null,
   question: string,
   description: string
 }

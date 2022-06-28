@@ -20,8 +20,8 @@ const store = createStore({
       data: {} ,
       token: sessionStorage.getItem('TOKEN'),
     },
-    surveys: [
-    {
+    surveys: [{
+
       id: 'Laravel 9',
       title: 'Laravel 9',
       description: `Consectetur esse aliquip culpa mollit amet ad culpa 
@@ -34,26 +34,13 @@ const store = createStore({
         {
           id: 1,
           type: QuestionType.TEXT,
+          options: null,
           question: 'are you happy today ?',
           description: `lorem Consectetur esse aliquip culpa mollit amet ad culpa 
           dolor occaecat velit fugiat`
-        },
-        {
-          id: 3,
-          type: QuestionType.RADIO,
-          question: 'are you happy today ?',
-          description: `lorem Consectetur esse aliquip culpa mollit amet ad culpa 
-          dolor occaecat velit fugiat`
-        },
-        {
-          id: 4,
-          type: QuestionType.CHECKBOX,
-          question: 'are you happy today ?',
-          description: `lorem Consectetur esse aliquip culpa mollit amet 
-          ad culpa dolor occaecat velit fugiat`
         },
       ],
-    }, 
+    },
     ],
   } as State,
   getters: {},

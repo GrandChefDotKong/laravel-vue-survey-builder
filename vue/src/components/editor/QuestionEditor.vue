@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { QuestionType, Question } from '../../types/types';
+import { QuestionType, Question, Option } from '../../types/types';
+import { v4 as uuidv4 } from 'uuid';
+import { computed } from '@vue/reactivity';
 
   const props = defineProps<{
     question: Question,
@@ -12,51 +14,75 @@ import { QuestionType, Question } from '../../types/types';
   const model = ref<Question>({
     id: props.question.id,
     type: props.question.type,
+    options: props.question.options,
     question: props.question.question,
     description: props.question.description,
   });
 
   const shouldHaveOptions = () => {
-    return false;
-    //return [, "radio", "checkbox"].includes(model.value);
+    return ['select', 'radio', 'checkbox'].includes(model.value.type);
   }
 
   const getOptions = () => {
-    return model.value.data.options;
+    return model.value.options;
   }
 
   const setOptions = (options: any) => {
-    model.value.data.options = options;
+    if(model.value.type === 'checkbox' && model.value.options 
+    && model.value.options.length > 1) {
+      model.value.options.splice(1);
+    }
+
+    model.value.options = options;
   }
 
   const addOption = () => {
-    setOptions([
-      ...getOptions(),
-      { 
-        //uuid: uuidv4(), 
-        text: "" 
-      },
-    ]);
+    if(!model.value.options){
+      setOptions([
+        { uuid: uuidv4(), text: "", },
+      ]);
+    } else {
+      setOptions([
+        ...model.value.options,
+        { uuid: uuidv4(), text: "", },
+      ]);
+    }
+
     dataChange();
   }
 
-  const removeOption = (op: string) => {
-    setOptions(getOptions().filter((opt: string) => opt !== op));
+  const canAddOption = computed(() => {
+    if(!['select', 'radio', 'checkbox'].includes(model.value.type)) {
+      return false;
+    }
+
+    if(model.value.type === 'checkbox' && model.value.options
+    && model.value.options.length >= 1) {
+      return false;
+    }
+
+    return true;
+  })
+
+  const removeOption = (option: Option) => {
+    setOptions(getOptions()?.filter((opt) => opt.uuid !== option.uuid));
     dataChange();
   }
 
   const typeChange = () => {
     if (shouldHaveOptions()) {
-      setOptions(getOptions() || []);
+      setOptions(getOptions());
     }
+
     dataChange();
   }
 
   const dataChange = () => {
     const data = model.value;
     if (!shouldHaveOptions()) {
-      delete data.data.options;
+      model.value.options = null;
     }
+
     emit("change", data);
   }
 
@@ -69,18 +95,16 @@ import { QuestionType, Question } from '../../types/types';
     emit("deleteQuestion", props.question);
   }
 </script>
+
 <template>
-  <pre>
-    {{ model }}
-  </pre>
   <div class="flex items-center justify-between">
-    <h3 v-if="index" class="text-lg font-bold">
+    <h3 class="text-lg font-bold">
       {{ index + 1 }}. {{ model.question }}
     </h3>
     <div class="flex items-center">
       <button type="button" @click="addQuestion()" 
         class="flex items-center text-xs py-1 px-3 mr-2 rounded-sm 
-      text-white bg-gray-600 hover:bg-gray-700"
+      text-white bg-gray-600 hover:bg-gray-700" vur
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -123,17 +147,17 @@ import { QuestionType, Question } from '../../types/types';
   </div>
   <div class="grid gap-3 grid-cols-12">
     <div class="mt-3 col-span-9">
-      <label :for="'question_text_' + model.data"
+      <label :for="'question_text_' + model.question"
         class="block text-sm w-fit font-medium text-gray-700"
       >
         Question Text :
       </label>
       <input
         type="text"
-        :name="'question_text_' + model.data"
+        :name="'question_text_' + model.question"
         v-model="model.question"
         @change="dataChange"
-        :id="'question_text_' + model.data"
+        :id="'question_text_' + model.question"
         class="mt-1 focus:ring-indigo-500 focus:border-indigo-500
         block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
       />
@@ -148,6 +172,7 @@ import { QuestionType, Question } from '../../types/types';
         id="question_type"
         name="question_type"
         v-model="model.type"
+        @change="typeChange"
         class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white
           rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 
           focus:border-indigo-500 sm:text-sm"
@@ -175,7 +200,7 @@ import { QuestionType, Question } from '../../types/types';
     <div v-if="shouldHaveOptions()" class="mt-2">
       <h4 class="text-sm font-semibold mb-1 flex justify-between items-center">
         Options
-        <button type="button" @click="addOption()"
+        <button v-if="canAddOption" type="button" @click="addOption()"
           class="flex items-center text-xs py-1 px-2 rounded-sm text-white
           bg-gray-600 hover:bg-gray-700"
         >
@@ -196,13 +221,13 @@ import { QuestionType, Question } from '../../types/types';
         </button>
       </h4>
       <div
-        v-if="!model.data.options.length"
+        v-if="model.options && !model.options.length"
         class="text-xs text-gray-600 text-center py-3"
       >
         You don't have any options defined
       </div>
       <div
-        v-for="(option, index) in model.data.options"
+        v-for="(option, index) in model.options"
         :key="option.uuid"
         class="flex items-center mb-1"
       >
