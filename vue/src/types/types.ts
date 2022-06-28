@@ -24,7 +24,7 @@ export type Survey = {
   title: string,
   status: boolean,
   description: string,
-  image: null | string,
+  image: null | string | ArrayBuffer,
   expire_date: null | Date,
   questions: Question[],
 };

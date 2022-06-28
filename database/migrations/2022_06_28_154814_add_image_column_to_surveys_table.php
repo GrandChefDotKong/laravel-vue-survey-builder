@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use \App\Models\Survey;
 
 return new class extends Migration
 {
@@ -14,11 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('survey_answers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('survey_id')->constrained('surveys');
-            $table->timestamp('start_date')->nullable();
-            $table->timestamp('end_date')->nullable();
+        Schema::table('surveys', function (Blueprint $table) {
+            $table->string('image', 255);
         });
     }
 
@@ -29,6 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('survey_answers');
+        Schema::table('surveys', function (Blueprint $table) {
+            $table->dropColumn('image');
+        });
     }
 };

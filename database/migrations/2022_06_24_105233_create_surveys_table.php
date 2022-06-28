@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use \App\Models\User;
 
 return new class extends Migration
 {
@@ -16,9 +15,9 @@ return new class extends Migration
     {
         Schema::create('surveys', function (Blueprint $table) {
             $table->id();
-            $table->foreignId(User::class, 'user_id');
-            $table->string('title', 256);
-            $table->string('slug', 256);
+            $table->foreignId('user_id')->constrained('users');
+            $table->string('title', 255);
+            $table->string('slug', 255);
             $table->tinyInteger('status');
             $table->text('description')->nullable();
             $table->timestamps();

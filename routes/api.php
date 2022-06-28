@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->group(function() {
   });
 
   Route::post('/signout', [AuthController::class, 'signout']);
+  Route::resource('/survey', \App\Http\Controllers\SurveyController::class);
 });
 
 Route::post('/signup', [AuthController::class, 'signup']);

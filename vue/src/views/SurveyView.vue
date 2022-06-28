@@ -46,6 +46,19 @@ import { QuestionType, Question, Survey } from '../types/types';
   const deleteQuestion = () => {
 
   }
+
+  const onImageChoose = (event: any) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      if(!model.value) return;
+
+      model.value.image = reader.result;
+     // model.value.image_url = reader.result;
+    }
+    reader.readAsDataURL(file);
+
+  }
   
 </script>
 
@@ -66,7 +79,7 @@ import { QuestionType, Question, Survey } from '../types/types';
               Image
             </label>
             <div class="mt-1 flex items-center">
-              <img v-if="model?.image" :src="model.image" :alt="model.title" 
+              <img v-if="model?.image" :src="model.image.toString()" :alt="model.title" 
                 class="w-64 h-48 object-cover"
               />
               <span v-else class="flex items-center justify-center h-12 w-12 
@@ -91,7 +104,7 @@ import { QuestionType, Question, Survey } from '../types/types';
                 font-medium hover:text-white hover:bg-indigo-500 focus:ring-2 focus:ring-offset-2 
               focus:ring-indigo-500"
               >
-                <input type="file" class="absolute left-0 top-0 right-0 bottom-0
+                <input type="file" @change="onImageChoose" class="absolute left-0 top-0 right-0 bottom-0
                   opacity-0 cursor-pointer"
                 >
                 Change
