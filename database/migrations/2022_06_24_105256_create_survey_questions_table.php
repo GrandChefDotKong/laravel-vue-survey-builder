@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('type', 45);
             $table->string('question', 2000);
             $table->longText('description')->nullable();
-            $table->longText('data')->nullable();
+            $table->longText('options')->nullable();
             $table->foreignId('survey_id')->constrained('surveys');
             $table->timestamps();
         });

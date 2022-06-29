@@ -9,7 +9,12 @@ import { computed } from '@vue/reactivity';
     index: number,
   }>();
 
-  const emit = defineEmits(['change', 'addQuestion', 'deleteQuestion']);
+  const emit = defineEmits<{
+    (e: 'change', data: Question): Question
+    (e: 'addQuestion'): void
+    (e: 'deleteQuestion'): void
+  }>()
+  
 
   const model = ref<Question>({
     id: props.question.id,
@@ -82,17 +87,17 @@ import { computed } from '@vue/reactivity';
     if (!shouldHaveOptions()) {
       model.value.options = null;
     }
-
+    console.log('changed')
     emit("change", data);
   }
 
   const addQuestion = () => {
     if(!props.index) return;
-    emit("addQuestion", props.index + 1);
+    emit("addQuestion");
   }
 
   const deleteQuestion = () => {
-    emit("deleteQuestion", props.question);
+    emit("deleteQuestion");
   }
 </script>
 
@@ -191,6 +196,7 @@ import { computed } from '@vue/reactivity';
     <textarea
       :name="'question_description_' + model.id"
       v-model="model.description"
+      @change="dataChange"
       :id="'question_description_' + model.id"
       class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
     >

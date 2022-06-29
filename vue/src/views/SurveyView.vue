@@ -40,7 +40,6 @@ import { QuestionType, Question, Survey } from '../types/types';
 
   const saveSurvey = () => {
     store.dispatch('saveSurvey', model.value).then(({ data }) => {
-      console.log(data.data.id);
       router.push({ name: 'survey-view', params: { id: data.data.id }, });
     });
   }
@@ -54,15 +53,36 @@ import { QuestionType, Question, Survey } from '../types/types';
   }
 
   const addQuestion = () => {
-
+    if(!model.value) return;
+    model.value.questions.push({
+      id: model.value.questions.length,
+      type: QuestionType.TEXT,
+      options: null,
+      question: '',
+      description: '',
+    })
   }
 
-  const questionChange = () => {
+  const questionChange = (data: Question) => {
+    if(!model.value) return;
+    const newQuestions = model.value.questions.map((question) => {
+      if(question.id === data.id) {
+        return data;
+      }
+      return question;
+    })
 
+    model.value.questions = newQuestions;
   }
 
-  const deleteQuestion = () => {
+  const deleteQuestion = (id: number) => {
+    if(!model.value) return;
 
+    const newQuestions = model.value.questions.filter((question) => {
+      return question.id !== id
+    });
+
+    model.value.questions = newQuestions;
   }
 
   const onImageChoose = (event: any) => {
@@ -79,6 +99,9 @@ import { QuestionType, Question, Survey } from '../types/types';
 </script>
 
 <template>
+<pre>
+  {{ model?.questions[0]?.options }}
+</pre>
   <page-component>
     <template v-slot:header>
       <div class="flex items-center justify-between">
@@ -233,7 +256,7 @@ import { QuestionType, Question, Survey } from '../types/types';
                   :index="index"
                   @change="questionChange"
                   @addQuestion="addQuestion"
-                  @deleteQuestion="deleteQuestion"
+                  @deleteQuestion="() => deleteQuestion(question.id)"
                 />
               </div>
             </div>
