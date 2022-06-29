@@ -11,6 +11,10 @@ import { QuestionType, Survey } from '../types/types';
       } | {},
       token: string | null
     },
+    currentSurvey: {
+      loading: boolean,
+      survey: Survey,
+    }
     surveys: Survey[],
   }
 
@@ -20,28 +24,11 @@ const store = createStore({
       data: {} ,
       token: sessionStorage.getItem('TOKEN'),
     },
-    surveys: [{
-
-      id: 'Laravel 9',
-      title: 'Laravel 9',
-      description: `Consectetur esse aliquip culpa mollit amet ad culpa 
-        dolor occaecat velit fugiat. Aliqua tempor laborum consequat occaecat 
-        dolor. Deserunt incididunt qui laborum aliqua reprehenderit in magna`,
-      image: 'https://raw.githubusercontent.com/agungksidik/public-assets/master/logo/laravel-logo.png',
-      status: false,
-      expire_date: null,
-      questions: [
-        {
-          id: 1,
-          type: QuestionType.TEXT,
-          options: null,
-          question: 'are you happy today ?',
-          description: `lorem Consectetur esse aliquip culpa mollit amet ad culpa 
-          dolor occaecat velit fugiat`
-        },
-      ],
+    currentSurvey: {
+      loading: false,
+      survey: {} as Survey,
     },
-    ],
+    surveys: [],
   } as State,
   getters: {},
   actions: {
@@ -63,50 +50,77 @@ const store = createStore({
         return res;
       });
     },
+    getSurveys({ commit }) {
+      return axiosClient.get(`/survey`).then((res) => {
+        commit('setSurveys', res.data.data);
+        return res;
+      }).catch((err) => {
+        throw err;
+      })
+    },
+    getSurvey({ commit }, id) {
+      commit('setCurrentSurveyLoading', true);
+      return axiosClient.get(`/survey/${id}`).then((res) => {
+        commit('setCurrentSurvey', res.data.data as Survey[]);
+        commit('setCurrentSurveyLoading', false);
+        return res;
+      }).catch((err) => {
+        commit('setCurrentSurveyLoading', false);
+        throw err;
+      })
+    },
     async saveSurvey({ commit }, survey) {
       let response; 
       if(survey.id) {
         response = await axiosClient
         .put(`/survey/${survey.id}`, survey)
         .then((res) => {
-          console.log('hellu')
-          commit('updateSurvey', res.data);
+          commit('setCurrentSurvey', res.data.data);
           return res;
         });
       } else {   
         response = axiosClient.post('/survey', survey).then((res) => {
-          commit('saveSurvey', res.data);
+          commit('setCurrentSurvey', res.data.data);
           return res;
         });
       }
-
       return response;
+    },
+    deleteSurvey({}, id: number) {
+      return axiosClient.delete(`/survey/${id}`);
     }
   },
   mutations: {
-    signout: (state) => {
+    signout: (state: State) => {
       state.user.data = {};
       state.user.token = null;
       sessionStorage.removeItem('TOKEN');
     },
-    setUser: (state, userData) => {
+    setUser: (state: State, userData) => {
       state.user.token = userData.token;
       state.user.data = userData.user;
       if(!userData.token) return;
       
       sessionStorage.setItem('TOKEN', userData.token);
     },
-
-    saveSurvey: (state, newSurvey) => {
-      console.log('hello')
-      state.surveys = [...state.surveys, newSurvey.data];
+    setSurveys: (state: State, surveys: Survey[]) => {
+      state.surveys = surveys;
     },
-    updateSurvey: (state, newSurvey) => {
+    setCurrentSurveyLoading: (state: State, loading: boolean) => {
+      state.currentSurvey.loading = loading;
+    },
+    setCurrentSurvey: (state: State, survey: Survey) => {
+      state.currentSurvey.survey = survey;
+    },
+    saveSurvey: (state: State, newSurvey: Survey) => {
+      state.surveys = [...state.surveys, newSurvey];
+    },
+    updateSurvey: (state: State, newSurvey: Survey) => {
       let newSurveys = state.surveys.filter((survey) => {
-        return survey.id === newSurvey.data.id;
+        return survey.id === newSurvey.id;
       });
 
-      newSurveys.push(newSurvey.data);
+      newSurveys.push(newSurvey);
       state.surveys = newSurveys; 
     }
   },
@@ -115,4 +129,3 @@ const store = createStore({
 });
 
 export default store;
-

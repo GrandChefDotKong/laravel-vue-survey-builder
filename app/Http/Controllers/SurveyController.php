@@ -68,7 +68,19 @@ class SurveyController extends Controller
      */
     public function update(UpdateSurveyRequest $request, Survey $survey)
     {
-        $survey->update($request->validated());
+        $data = $request->validated();
+
+        if(isset($data['image'])) {
+            $relativePath = $this->saveImage($data['image']);
+            $data['image'] = $relativePath;
+        }
+
+        if($survey->image) {
+            $abosultePath = public_path($survey->image);
+            File::delete($abosultePath);
+        }
+
+        $survey->update($data);
         return new SurveyResource($survey);
     }
 
@@ -87,11 +99,16 @@ class SurveyController extends Controller
 
         $survey->delete();
 
+        if($survey->image) {
+            $abosultePath = public_path($survey->image);
+            File::delete($abosultePath);
+        }
+
         return response('Successfully deleted', 204);
     }
 
     public function saveImage($image) {
-        if(preg_match('/ ^data:image\/(\w+);base64,/', $image, $type)) {
+        if(preg_match('/^data:image\/(\w+);base64,/', $image, $type)) {
             $image = substr($image, strpos($image, ',') + 1);
 
             $type = strtolower($type[1]);

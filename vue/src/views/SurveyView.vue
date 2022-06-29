@@ -3,7 +3,7 @@ import PageComponent from '../components/PageComponent.vue';
 import QuestionEditor from '../components/editor/QuestionEditor.vue';
 import TButton from '../components/core/TButton.vue';
 import store from '../store';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { QuestionType, Question, Survey } from '../types/types';
 
@@ -21,18 +21,36 @@ import { QuestionType, Question, Survey } from '../types/types';
   });
 
   if(route.params.id) {
-    const survey = store.state.surveys.find((survey) => {
-      return survey.id === route.params.id; 
-    }) as Survey;
-
-    model.value = survey || null;
+    store.dispatch('getSurvey', route.params.id);
   }
+
+  watch(() => store.state.currentSurvey.survey, (newValue, oldValue) => {
+    model.value = newValue;
+  });
+
+  const surveyLoading = computed(() => store.state.currentSurvey.loading);
+
+  const formatedDate = computed(() => {
+    if(!model.value?.expire_date) return null;
+
+    model.value.expire_date.toLocaleDateString(
+      'en-US', { year: 'numeric', month: 'numeric', day: 'numeric' }
+    );
+  });
 
   const saveSurvey = () => {
     store.dispatch('saveSurvey', model.value).then(({ data }) => {
-      router.push({ name: 'SurveyView', params: { id: data.data.id }, });
+      console.log(data.data.id);
+      router.push({ name: 'survey-view', params: { id: data.data.id }, });
     });
+  }
 
+  const deleteSurvey = () => {
+    if(!confirm('Are you sure ? This can be undone !')) return;
+
+    store.dispatch('deleteSurvey', model.value?.id).then(() => {
+      router.push({ name: 'surveys' })
+    })
   }
 
   const addQuestion = () => {
@@ -57,9 +75,7 @@ import { QuestionType, Question, Survey } from '../types/types';
      // model.value.image_url = reader.result;
     }
     reader.readAsDataURL(file);
-
   }
-  
 </script>
 
 <template>
@@ -67,11 +83,31 @@ import { QuestionType, Question, Survey } from '../types/types';
     <template v-slot:header>
       <div class="flex items-center justify-between">
         <h1 class="text-3xl font-bold text-gray-900">
-          {{ model?.id ? model.title : "Create a Survey" }}
+          {{ route.params.id ? "Update a Survey" : "Create a Survey" }}
         </h1>
+        <button v-if="route.params.id" @click="deleteSurvey" type="button" 
+        class="py-2 px-3 flex flex-row items-center text-white bg-red-500 rounded-md hover:bg-red-700">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 mr-2 white"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 
+              2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 
+              2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 
+              1 0 102 0V8a1 1 0 00-1-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Delete Survey
+        </button>
       </div>
     </template>
-    <form v-if="model" @submit.prevent="saveSurvey">
+    <div v-if="surveyLoading">Loading ...</div>
+    <form v-if="model && !surveyLoading" @submit.prevent="saveSurvey">
       <div class="shadow sm:rounded-md sm:overflow-hidden">
         <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
           <div>
@@ -188,7 +224,7 @@ import { QuestionType, Question, Survey } from '../types/types';
                 </button>
                 <!--/ Add new question -->
               </h3>
-              <div v-if="!model.questions.length" class="text-center text-gray-600">
+              <div v-if="!model.questions || !model.questions.length" class="text-center text-gray-600">
                 You don't have any questions created
               </div>
               <div v-for="(question, index) in model.questions" :key="question.id">
