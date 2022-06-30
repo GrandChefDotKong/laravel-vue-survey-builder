@@ -6,6 +6,7 @@ import Signup from '../views/Signup.vue';
 import DefaultLayout from '../components/DefaultLayout.vue';
 import AuthLayout from '../components/AuthLayout.vue';
 import SurveysView from '../views/SurveyView.vue';
+import SurveyPublicView from '../views/SurveyPublicView.vue';
 import store from '../store';
 
 const routes = [
@@ -22,22 +23,22 @@ const routes = [
     ]
   },
   {
+    path: '/public',
+    name: 'public',
+    component: AuthLayout,
+    children: [
+      { path: '/survey/:slug', name: 'survey-public-view', component: SurveyPublicView, },
+    ],
+  },
+  {
     path: '/auth',
     redirect: '/signin',
     name: 'auth',
     component: AuthLayout,
     meta: { isGuest: true },
     children: [
-      {
-        path: '/signin',
-        name: 'signin',
-        component: Signin,
-      },
-      {
-        path: '/signup',
-        name: 'signup',
-        component: Signup,
-      },
+      { path: '/signin', name: 'signin', component: Signin, },
+      { path: '/signup', name: 'signup', component: Signup, },
     ],
   }
 ]

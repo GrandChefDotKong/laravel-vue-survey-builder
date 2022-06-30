@@ -6,6 +6,19 @@ export enum QuestionType {
   TEXTAREA = 'textarea'
 }
 
+export enum NotificationType {
+  NULL = 'null', 
+  SUCCESS = 'success', 
+  FAIL = 'fail',
+  ERROR = 'errror'
+}
+
+export type Notification = {
+  show: boolean,
+  type: string,
+  message: string | null,
+}
+
 export type Option = {
   uuid: string,
   text: string,
@@ -21,6 +34,7 @@ export type Question = {
 
 export type Survey = {
   id: string,
+  slug: string,
   title: string,
   status: boolean,
   description: string,

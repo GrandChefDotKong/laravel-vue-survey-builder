@@ -61,11 +61,6 @@ import { computed } from '@vue/reactivity';
       return false;
     }
 
-    if(model.value.type === 'checkbox' && model.value.options
-    && model.value.options.length >= 1) {
-      return false;
-    }
-
     return true;
   })
 

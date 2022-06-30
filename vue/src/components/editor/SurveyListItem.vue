@@ -20,9 +20,10 @@ import { useRouter } from 'vue-router';
 </script>
 
 <template>
-  <div v-for="survey in surveys"
+  <div v-for="(survey, index) in surveys"
     :key="survey.id"
-    class="flex-flex-col py-4 px-6 shadow-md 
+    :style="{ animationDelay: `${index * 0.1}s` }"
+    class="opacity-0 animate-fade-in-down flex-flex-col py-4 px-6 shadow-md 
     bg-white hover:bg-gray-50 h-[470px]"
   >
     <img v-if="survey.image" :src="survey.image.toString()" alt="" 
@@ -54,6 +55,27 @@ import { useRouter } from 'vue-router';
           />
         </svg>
         Edit
+      </router-link>
+      <router-link :to="{ name: 'survey-public-view', params: { slug: survey.slug } }"
+      class="h-8 w-8 flex items-center justify-center rounded-full border 
+      border-transparent text-sm text-indigo-500 focus:ring-2 
+      focus:ring-offset-2 focus:ring-indigo-500"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="#4287f5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 
+            0v6m0-6L10 14"
+          />
+        </svg>
       </router-link>
       <button
         v-if="survey.id"

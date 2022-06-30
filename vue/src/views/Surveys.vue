@@ -6,8 +6,15 @@ import { computed } from 'vue';
 import SurveyListItem from '../components/editor/SurveyListItem.vue';
 
   const surveys = computed(() => store.state.surveys);
+  const links = computed(() => store.state.links);
 
   store.dispatch('getSurveys');
+
+  const getForPage = (link: any) => {
+    if(!link.url || link.active) return;
+
+    store.dispatch('getSurveys', { url: link.url });
+  }
 </script>
 
 <template>
@@ -37,10 +44,31 @@ import SurveyListItem from '../components/editor/SurveyListItem.vue';
         </router-link>
       </div>
     </template>
-    <div class="grid grid-cols-1 gap-3 
-      sm:grid-cols-2 md:grid-cols-3"
-    >
-      <survey-list-item :surveys="surveys" />
+    <div>
+      <div class="grid grid-cols-1 gap-3 
+        sm:grid-cols-2 md:grid-cols-3"
+      >
+        <survey-list-item :surveys="surveys" />
+      </div>
+      <div class="flex justify-center mt-5">
+        <nav aria-label="Pagination" class="relative z-0 inline-flex
+        justify-center rounded-md shadow-sm">
+          <button
+            v-for="(link, index) of links"  
+            v-html="link.label"
+            :key="index" 
+            :disabled="!link.url" 
+            @click="getForPage(link)"
+            class="relative inline-flex items-center px-4 py-2 border 
+            text-sm font-medium whitespace-nowrap" 
+            :class="[link.active ? `z-10 bg-indigo-50 border-indigo-500
+            text-indigo-600` : `bg-white border-gray-300
+            text-gray-500 hover:bg-gray-50`, 
+            (index === 0 || index === links.length - 1 ) ? 'rounded' : '']"
+          >
+          </button>
+        </nav>
+      </div>
     </div>
   </page-component>
 </template>

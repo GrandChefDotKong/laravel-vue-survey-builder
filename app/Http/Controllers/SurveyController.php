@@ -1,12 +1,15 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreSurveyAnswerRequest;
 use App\Http\Requests\StoreSurveyRequest;
 use App\Http\Requests\UpdateSurveyRequest;
 use App\Http\Resources\SurveyResource;
 use \Illuminate\Http\Request;
 use App\Models\Survey;
+use App\Models\SurveyAnswer;
 use App\Models\SurveyQuestion;
+use App\Models\SurveyQuestionAnswer;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\Rule;
@@ -24,7 +27,7 @@ class SurveyController extends Controller
     {
         $user = $request->user();
         return SurveyResource::collection(
-            Survey::where('user_id', $user->id)->paginate(50)
+            Survey::where('user_id', $user->id)->paginate(6)
         );
     }
 
@@ -49,6 +52,18 @@ class SurveyController extends Controller
             $question['survey_id'] = $survey->id;
             $this->createQuestion($question);
         }
+
+        return new SurveyResource($survey);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Survey  $survey
+     * @return \Illuminate\Http\Response
+     */
+    public function showForGuest(Survey $survey)
+    {
 
         return new SurveyResource($survey);
     }
@@ -219,6 +234,37 @@ class SurveyController extends Controller
         ]);
 
         return $question->update($validator->validated());
+    }
+
+    public function storeAnswer(StoreSurveyAnswerRequest $request, Survey $survey) {
+        $validated = $request->validated();
+
+        $surveyAnswer = SurveyAnswer::create([
+            'survey_id' => $survey->id,
+            'start_date' => date('Y-m-d H:i:s'),
+            'end_date' => date('Y-m-d H:i:s'),
+        ]);
+
+        foreach($validated['answers'] as $questionId => $answer) {
+            $question = SurveyQuestion::where([
+                'id' => $questionId, 
+                'survey_id' => $survey->id,
+            ])->get();
+
+            if(!$question) {
+                return response('Invalid question ID: '. $questionId .'', 400);
+            }
+
+            $data = [
+                'survey_question_id' => $questionId,
+                'survey_answer_id' => $surveyAnswer->id,
+                'answer' => is_array($answer) ? json_encode($answer): $answer
+            ];
+
+            $questionAnswer = SurveyQuestionAnswer::create($data);
+        }
+
+        return response('', 201);
     }
 }
 

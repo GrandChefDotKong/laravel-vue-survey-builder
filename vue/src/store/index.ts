@@ -1,6 +1,6 @@
 import { createStore } from "vuex";
 import axiosClient from '../composables/axios';
-import { QuestionType, Survey } from '../types/types';
+import { QuestionType, Survey, Notification, NotificationType } from '../types/types';
 
   type State = {
     user: {
@@ -15,7 +15,9 @@ import { QuestionType, Survey } from '../types/types';
       loading: boolean,
       survey: Survey,
     }
+    links: any[],
     surveys: Survey[],
+    notifications: Notification[],
   }
 
 const store = createStore({
@@ -28,7 +30,9 @@ const store = createStore({
       loading: false,
       survey: {} as Survey,
     },
+    links: [],
     surveys: [],
+    notifications: [],
   } as State,
   getters: {},
   actions: {
@@ -50,9 +54,10 @@ const store = createStore({
         return res;
       });
     },
-    getSurveys({ commit }) {
-      return axiosClient.get(`/survey`).then((res) => {
-        commit('setSurveys', res.data.data);
+    getSurveys({ commit }, {url = null} = {}) {
+      url = url || `/survey`;
+      return axiosClient.get(url).then((res) => {
+        commit('setSurveys', res.data);
         return res;
       }).catch((err) => {
         throw err;
@@ -61,6 +66,17 @@ const store = createStore({
     getSurvey({ commit }, id) {
       commit('setCurrentSurveyLoading', true);
       return axiosClient.get(`/survey/${id}`).then((res) => {
+        commit('setCurrentSurvey', res.data.data as Survey[]);
+        commit('setCurrentSurveyLoading', false);
+        return res;
+      }).catch((err) => {
+        commit('setCurrentSurveyLoading', false);
+        throw err;
+      })
+    },
+    getSurveyBySlug({ commit }, slug: string) {
+      commit('setCurrentSurveyLoading', true);
+      return axiosClient.get(`/survey-by-slug/${slug}`).then((res) => {
         commit('setCurrentSurvey', res.data.data as Survey[]);
         commit('setCurrentSurveyLoading', false);
         return res;
@@ -88,7 +104,10 @@ const store = createStore({
     },
     deleteSurvey({}, id: number) {
       return axiosClient.delete(`/survey/${id}`);
-    }
+    },
+    saveSurveyAnswer: ({ commit }, { surveyId, answers }) => {
+      return axiosClient.post(`/survey/${surveyId}/answer`, { answers })
+    },
   },
   mutations: {
     signout: (state: State) => {
@@ -103,8 +122,14 @@ const store = createStore({
       
       sessionStorage.setItem('TOKEN', userData.token);
     },
-    setSurveys: (state: State, surveys: Survey[]) => {
-      state.surveys = surveys;
+    notify: (state: State, notification: Notification) => {
+      const index = state.notifications.length
+      state.notifications.push(notification);
+      setTimeout(() => state.notifications[index].show = false, 3000);
+    },
+    setSurveys: (state: State, surveys: any) => {
+      state.surveys = surveys.data;
+      state.links = surveys.meta.links;
     },
     setCurrentSurveyLoading: (state: State, loading: boolean) => {
       state.currentSurvey.loading = loading;

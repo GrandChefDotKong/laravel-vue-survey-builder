@@ -5,7 +5,7 @@ import TButton from '../components/core/TButton.vue';
 import store from '../store';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { QuestionType, Question, Survey } from '../types/types';
+import { QuestionType, Question, Survey, NotificationType } from '../types/types';
 
   const route = useRoute();
   const router = useRouter();
@@ -14,6 +14,7 @@ import { QuestionType, Question, Survey } from '../types/types';
     id: '',
     title: '',
     status: false,
+    slug: '',
     description: '',
     image: null,
     expire_date: null,
@@ -40,6 +41,12 @@ import { QuestionType, Question, Survey } from '../types/types';
 
   const saveSurvey = () => {
     store.dispatch('saveSurvey', model.value).then(({ data }) => {
+      store.commit('notify', {
+        show: true,
+        type: NotificationType.SUCCESS,
+        message: `${model.value?.title} has been ${route.params.id ? 
+        'updated' : 'saved'} !`
+      });
       router.push({ name: 'survey-view', params: { id: data.data.id }, });
     });
   }
@@ -48,6 +55,11 @@ import { QuestionType, Question, Survey } from '../types/types';
     if(!confirm('Are you sure ? This can be undone !')) return;
 
     store.dispatch('deleteSurvey', model.value?.id).then(() => {
+      store.commit('notify', {
+        show: true,
+        type: NotificationType.SUCCESS,
+        message: `${model.value?.title} has been deleted !`
+      });
       router.push({ name: 'surveys' })
     })
   }
@@ -99,9 +111,6 @@ import { QuestionType, Question, Survey } from '../types/types';
 </script>
 
 <template>
-<pre>
-  {{ model?.questions[0]?.options }}
-</pre>
   <page-component>
     <template v-slot:header>
       <div class="flex items-center justify-between">
@@ -130,7 +139,9 @@ import { QuestionType, Question, Survey } from '../types/types';
       </div>
     </template>
     <div v-if="surveyLoading">Loading ...</div>
-    <form v-if="model && !surveyLoading" @submit.prevent="saveSurvey">
+    <form v-if="model && !surveyLoading" @submit.prevent="saveSurvey"
+      class="animate-fade-in-down"
+    >
       <div class="shadow sm:rounded-md sm:overflow-hidden">
         <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
           <div>
