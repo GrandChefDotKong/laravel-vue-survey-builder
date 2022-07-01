@@ -13,6 +13,11 @@ export enum NotificationType {
   ERROR = 'errror'
 }
 
+export type Dashboard = {
+  loading: boolean,
+  data: Object
+}
+
 export type Notification = {
   show: boolean,
   type: string,

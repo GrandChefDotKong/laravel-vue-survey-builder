@@ -1,6 +1,6 @@
 import { createStore } from "vuex";
 import axiosClient from '../composables/axios';
-import { QuestionType, Survey, Notification, NotificationType } from '../types/types';
+import { QuestionType, Survey, Notification, NotificationType, Dashboard } from '../types/types';
 
   type State = {
     user: {
@@ -11,6 +11,7 @@ import { QuestionType, Survey, Notification, NotificationType } from '../types/t
       } | {},
       token: string | null
     },
+    dashboard: Dashboard
     currentSurvey: {
       loading: boolean,
       survey: Survey,
@@ -25,6 +26,10 @@ const store = createStore({
     user: {
       data: {} ,
       token: sessionStorage.getItem('TOKEN'),
+    },
+    dashboard: {
+      loading: false,
+      data: {}
     },
     currentSurvey: {
       loading: false,
@@ -51,6 +56,14 @@ const store = createStore({
     signout({ commit }) {
       return axiosClient.post('/signout').then((res) => {
         commit('signout');
+        return res;
+      });
+    },
+    getDashboardData({ commit }) {
+      commit('dashboardLoading', true);
+      return axiosClient.get('/dashboard/index').then((res) => {
+        commit('setDashboardData', res.data);
+        commit('dashboardLoading', false);
         return res;
       });
     },
@@ -121,6 +134,12 @@ const store = createStore({
       if(!userData.token) return;
       
       sessionStorage.setItem('TOKEN', userData.token);
+    },
+    dashboardLoading: (state: State, loading: boolean) => {
+      state.dashboard.loading = loading;
+    },
+    setDashboardData: (state: State, data: any) => {
+      state.dashboard.data = data;
     },
     notify: (state: State, notification: Notification) => {
       const index = state.notifications.length
